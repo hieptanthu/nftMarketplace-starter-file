@@ -1,9 +1,13 @@
 import "../styles/globals.css";
+import RootLayout from "../layout/RootLayout";
+import { ContractProvider } from "../context/NFTMarketplaceContext.js";
 
 const MyApp = ({ Component, pageProps }) => (
-  <div>
-    <Component {...pageProps} />
-  </div>
+  <ContractProvider>
+    <RootLayout>
+      <Component {...pageProps} />
+    </RootLayout>
+  </ContractProvider>
 );
 
 export default MyApp;

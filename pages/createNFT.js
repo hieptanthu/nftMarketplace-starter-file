@@ -1,12 +1,29 @@
 import React from "react";
 import { useContract } from "../context/NFTMarketplaceContext";
 import { Container } from "@mui/material";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Col, Row } from "react-bootstrap";
 import component from "../components";
-
+import Web3 from "web3";
+import myNFTapi from "../api/myNFTapi";
+import { useRouter } from "next/router";
 function createNFT() {
-  const { createNFT } = useContract();
+  const { connectingWithSmartContract, account, uploadToNFTStorage } =
+    useContext(useContract);
+  const router = useRouter();
+
+  const [loaging, SetLoading] = useState(false);
+  const [loagingCount, SetLoadingCount] = useState(10);
+  const [data, setData] = useState({
+    tokenId: "",
+    // category_id: null,
+    title: "",
+    Description: "",
+    owner: "",
+    show: "0",
+    image: "",
+  });
+
   const [formParams, updateFormParams] = useState({
     title: "",
     Description: "",
@@ -17,6 +34,48 @@ function createNFT() {
   const [file, setFile] = useState(null);
   const [message, updateMessage] = useState("");
 
+  const createNFTSmartContract = async (formInput, file) => {
+    const { title, Description } = formInput;
+    if (!title || !Description || !file || !account) {
+      return console.log("Data Is Missing", title);
+    }
+    SetLoading(true);
+
+    const url = await uploadToNFTStorage(file);
+    if (url) {
+      SetLoadingCount(40);
+      const contract = await connectingWithSmartContract();
+      if (!contract) {
+        return console.error("Contract is not initialized");
+      }
+      const web3 = new Web3(window.ethereum);
+      const transaction = await contract.methods
+        .createToken(url, title, Description, true)
+        .send({
+          from: account,
+          value: web3.utils.toWei("0.0001", "ether"),
+        });
+
+      const tokenCreatedEvent = transaction.events.createListMyNFT;
+      if (tokenCreatedEvent) {
+        SetLoadingCount(80);
+        const returnValues = tokenCreatedEvent.returnValues;
+        const value = {
+          tokenId: returnValues[0].toString(),
+          // category_id: null,
+          title: returnValues[1],
+          Description: returnValues[2],
+          owner: returnValues[3],
+          show: returnValues[4] ? 0 : 1,
+          image: returnValues[5],
+        };
+        setData(value);
+        return value;
+      } else {
+        console.log("TokenCreated event not found.");
+      }
+    }
+  };
   async function disableButton() {
     const listButton = document.getElementById("list-button");
     listButton.disabled = true;
@@ -50,11 +109,19 @@ function createNFT() {
 
   async function Create(e) {
     e.preventDefault();
-    const data = await createNFT(formParams, file);
-    console.log(data);
+    const out = await createNFTSmartContract(formParams, file);
+    if (out) {
+      const portApi = await myNFTapi.post(out);
+      if (portApi) {
+        SetLoadingCount(100);
+        SetLoading(false);
+        router.push("/");
+      }
+    }
   }
   return (
     <Container maxWidth="xxl">
+      {loaging ? component.common.load.LoadBase(loagingCount) : <></>}
       <Row>
         <Col>
           <div style={{ textAlign: "center", marginTop: "2.5rem" }}>
@@ -117,7 +184,10 @@ function createNFT() {
                   type="text"
                   placeholder="Axie#4563"
                   onChange={(e) =>
-                    updateFormParams({ ...formParams, title: e.target.value })
+                    updateFormParams({
+                      ...formParams,
+                      title: e.target.value,
+                    })
                   }
                   value={formParams.name}
                 />

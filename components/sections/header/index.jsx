@@ -14,7 +14,7 @@ import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 import style from "./style.module.css";
-import { useContract } from "../../../context/NFTMarketplaceContext.js";
+import { useContract } from "../../../context/NFTMarketplaceContext";
 import lbr from "../../../lbr/index.js";
 import Link from "next/link";
 function Header() {
@@ -22,6 +22,7 @@ function Header() {
   const [pages] = useState(["Products Sell", "Products Auction"]);
   const [settings] = useState([
     { href: "/Profile", value: "Profile" },
+    { href: "/myNFT", value: "myNFT" },
     { href: "/createNFT", value: "CreateNFT" },
     { href: "/Dashboard", value: "Dashboard" },
   ]);

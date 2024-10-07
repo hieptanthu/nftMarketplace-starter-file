@@ -25,6 +25,8 @@
     "ipfs-http-client": "^58.0.1",
     "next": "12.2.5",
     "nft.storage": "^7.2.0",
+    "process": "^0.11.10",
+    "query-string": "^9.1.0",
     "react": "18.2.0",
     "react-bootstrap": "^2.10.5",
     "react-dom": "18.2.0",

@@ -3,7 +3,9 @@ import LoadLogo from "./LoadLogo";
 import LoadPay from "./LoadPay";
 
 var load = {
-  LoadBase: <Load />,
+  LoadBase: (progress) => {
+    return <Load progress={progress} />;
+  },
   LoadLogo: <LoadLogo />,
   LoadPay: <LoadPay />,
 };

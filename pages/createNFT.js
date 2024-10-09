@@ -7,22 +7,18 @@ import component from "../components";
 import Web3 from "web3";
 import myNFTapi from "../api/myNFTapi";
 import { useRouter } from "next/router";
+
 function createNFT() {
   const { connectingWithSmartContract, account, uploadToNFTStorage } =
     useContext(useContract);
   const router = useRouter();
 
+  if (account === "") {
+    return;
+  }
+
   const [loaging, SetLoading] = useState(false);
   const [loagingCount, SetLoadingCount] = useState(10);
-  const [data, setData] = useState({
-    tokenId: "",
-    // category_id: null,
-    title: "",
-    Description: "",
-    owner: "",
-    show: "0",
-    image: "",
-  });
 
   const [formParams, updateFormParams] = useState({
     title: "",
@@ -40,11 +36,13 @@ function createNFT() {
       return console.log("Data Is Missing", title);
     }
     SetLoading(true);
+    // await uploadToNFTStorage(file);
 
-    const url = await uploadToNFTStorage(file);
+    const url = "dd";
     if (url) {
       SetLoadingCount(40);
       const contract = await connectingWithSmartContract();
+      console.log(contract);
       if (!contract) {
         return console.error("Contract is not initialized");
       }
@@ -53,27 +51,31 @@ function createNFT() {
         .createToken(url, title, Description, true)
         .send({
           from: account,
-          value: web3.utils.toWei("0.0001", "ether"),
+          value: web3.utils.toWei("0.000001", "ether"),
         });
 
-      const tokenCreatedEvent = transaction.events.createListMyNFT;
-      if (tokenCreatedEvent) {
-        SetLoadingCount(80);
-        const returnValues = tokenCreatedEvent.returnValues;
-        const value = {
-          tokenId: returnValues[0].toString(),
-          // category_id: null,
-          title: returnValues[1],
-          Description: returnValues[2],
-          owner: returnValues[3],
-          show: returnValues[4] ? 0 : 1,
-          image: returnValues[5],
-        };
-        setData(value);
-        return value;
-      } else {
-        console.log("TokenCreated event not found.");
-      }
+      console.log(transaction);
+
+      const tokenCreatedEvent = contract.events.CreateListMyNFT;
+      console.log(tokenCreatedEvent);
+
+      // if (tokenCreatedEvent) {
+      //   SetLoadingCount(80);
+      //   const returnValues = tokenCreatedEvent.returnValues;
+      //   console.log(typeof returnValues[0]);
+      //   const value = {
+      //     tokenId: returnValues[0].toString(),
+      //     // category_id: null,
+      //     title: returnValues[1],
+      //     Description: returnValues[2],
+      //     owner: returnValues[3],
+      //     show: returnValues[4] ? 0 : 1,
+      //     image: returnValues[5],
+      //   };
+      //   return value;
+      // } else {
+      //   console.log("TokenCreated event not found.");
+      // }
     }
   };
   async function disableButton() {
@@ -120,7 +122,7 @@ function createNFT() {
     }
   }
   return (
-    <Container maxWidth="xxl">
+    <Container>
       {loaging ? component.common.load.LoadBase(loagingCount) : <></>}
       <Row>
         <Col>

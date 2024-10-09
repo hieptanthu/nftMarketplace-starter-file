@@ -9,8 +9,8 @@ const product = {
   ProductDetailL: (_state) => {
     return <ProductDetail state={_state} />;
   },
-  ListProduct: () => {
-    return <ListProduct />;
+  ListProduct: (nfts, type) => {
+    return <ListProduct products={nfts} type={type}></ListProduct>;
   },
 };
 

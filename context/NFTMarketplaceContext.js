@@ -6,7 +6,7 @@ import axios from "axios";
 import { nftMarketplaceAddress, nftMarketplaceABI } from "./constants";
 import Web3Modal from "web3modal";
 import Web3 from "web3";
-
+import { ethers } from "ethers";
 async function uploadToNFTStorage(fileData) {
   const fromData = new FormData();
   fromData.append("file", fileData);
@@ -57,39 +57,57 @@ export const ContractProvider = ({ children }) => {
   //  Connecting Wallet
   const connectWallet = async () => {
     try {
-      if (!window.ethereum) return console.log("Install MetaMask");
+      if (!window.ethereum) {
+        console.log("Please install MetaMask");
+        return;
+      }
+
       const accounts = await window.ethereum.request({
         method: "eth_accounts",
       });
 
       setAccount(accounts[0]);
 
+      console.log(accounts[0]);
       window.location.reload();
     } catch (error) {
-      console.log("SomeTing Went connecting With wallet");
+      console.log("Something went wrong while connecting with the wallet");
     }
   };
 
   // check If Wallet Connected
+
   const checkIfWalletConnected = async () => {
     try {
-      const test = connectingWithSmartContract();
-      console.log(test);
-      if (!window.ethereum) return console.log("Install MetaMask");
+      if (!window.ethereum) {
+        console.log("Please install MetaMask");
+        return;
+      }
+
+      // Create a Web3 instance using the provider injected by MetaMask
+      const web3 = new Web3(window.ethereum);
+
+      // Request wallet connection (asks user for permission)
       const accounts = await window.ethereum.request({
-        method: "eth_accounts",
+        method: "eth_requestAccounts",
       });
-      console.log(accounts[0]);
-      if (accounts.length) {
-        setAccount(accounts[0]);
+
+      if (accounts.length > 0) {
+        const account = accounts[0];
+
+        // Get the balance of the connected account (balance is in wei)
+        const accountOk = await web3.eth.getAccounts(account);
+        setAccount(accountOk[0]);
       } else {
-        console.log("No Account Found");
+        console.log("No accounts found");
       }
     } catch (error) {
-      console.log("SomeTing Went connecting With wallet");
+      console.log(
+        "Something went wrong while connecting with the wallet",
+        error
+      );
     }
   };
-
   //create Function
 
   return (
